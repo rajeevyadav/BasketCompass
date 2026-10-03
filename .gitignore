@@ -1,0 +1,40 @@
+# ── Python ───────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# ── Node / web (in case the product is JS) ─────────────────────────────────
+node_modules/
+dist/
+build/
+
+# ── Secrets / private data (PUBLIC repo — keep these out, always) ──────────
+/private/
+*.key
+*.pem
+secrets.*
+.env
+
+# ── Internal governance & traceability (not published) ─────────────────────
+# GOVERNANCE.md is internal guidance; _directives/ holds the D-NNN director
+# asks and R-NNN implementor responses. Never committed.
+GOVERNANCE.md
+/_directives/
+
+# ── Coverage / logs ────────────────────────────────────────────────────────
+.coverage
+coverage.xml
+htmlcov/
+*.log
+
+# ── OS / editor ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

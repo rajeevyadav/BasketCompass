@@ -1,0 +1,9 @@
+#!/usr/bin/env python3
+import os,re,subprocess,sys
+owner=os.environ.get('OWNER_EMAIL','').strip()
+if not owner: sys.exit('Set OWNER_EMAIL before committing.')
+for role in ['AUTHOR','COMMITTER']:
+    ident=subprocess.check_output(['git','var','GIT_'+role+'_IDENT']).decode()
+    if '<'+owner+'>' not in ident: sys.exit('Unauthorized '+role+' identity.')
+message=open(sys.argv[1]).read()
+if re.search(r'(?i)\b(ai|chatgpt|codex|copilot|claude|gemini|bot)\b|co-authored-by|generated.by',message): sys.exit('Prohibited attribution; edit the message manually.')

@@ -1,0 +1,31 @@
+name: authorship-guard
+# Every commit must be the owner's own signed work: no AI attribution in the
+# message or trailers, and no bot-authored commits (dependabot, renovate,
+# github-actions, copilot, or any *[bot]* identity). This is the remote second
+# gate; the local .githooks/commit-msg hook is the first and can be bypassed.
+on:
+  pull_request: { branches: [main] }
+  push: { branches: [main] }
+permissions: { contents: read }
+concurrency:
+  group: authorship-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: No AI attribution and no bot commits
+        run: |
+          RANGE="origin/main..HEAD"
+          if ! git rev-parse origin/main >/dev/null 2>&1; then RANGE="HEAD"; fi
+          if git log --format='%B' $RANGE | \
+             grep -qiE 'co-authored-by:.*(claude|copilot|chatgpt|openai|anthropic|gemini|bard)|generated with .*(ai|claude|copilot|chatgpt)|🤖'; then
+            echo "AI attribution found in commit history — not allowed." && exit 1
+          fi
+          if git log --format='%an <%ae>%n%cn <%ce>' $RANGE | \
+             grep -qiE '\[bot\]|dependabot|renovate\b|github-actions|copilot'; then
+            echo "Bot-authored/committed commit found — not allowed." && exit 1
+          fi
+          echo "OK: owner-authored, no AI attribution."

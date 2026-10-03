@@ -1,0 +1,32 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "BasketCompass",
+  "version": "0.1.0",
+  "identifier": "ca.basketcompass.app",
+  "build": {
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "BasketCompass",
+        "width": 1100,
+        "height": 820,
+        "minWidth": 360,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "../dist/Icon-512.png"
+    ],
+    "shortDescription": "Grocery price comparison with tax-aware shopping plans.",
+    "longDescription": "Compare the groceries you actually buy across nearby stores, build reusable lists, and get the lowest-total shopping plan. Lists stay on your device."
+  }
+}

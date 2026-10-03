@@ -9,9 +9,10 @@ __pycache__/
 .venv/
 venv/
 
-# ── Node / web (in case the product is JS) ─────────────────────────────────
+# ── Node / web ─────────────────────────────────────────────────────────────
+# dist/ is NOT ignored: it holds the hand-written app shell that GitHub Pages
+# publishes. There is no build step that regenerates it.
 node_modules/
-dist/
 build/
 
 # ── Secrets / private data (PUBLIC repo — keep these out, always) ──────────
@@ -26,6 +27,12 @@ secrets.*
 # asks and R-NNN implementor responses. Never committed.
 GOVERNANCE.md
 /_directives/
+
+# ── Assistant working notes (kept local, never published) ──────────────────
+# CLAUDE.md and the .claude/ working directory identify the authoring tool and
+# are the owner's local notes. They stay on disk but out of this public repo.
+CLAUDE.md
+/.claude/
 
 # ── Coverage / logs ────────────────────────────────────────────────────────
 .coverage

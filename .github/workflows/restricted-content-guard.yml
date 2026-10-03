@@ -1,0 +1,26 @@
+name: restricted-content-guard
+# This repository is PUBLIC. Fail the build if anything confidential is tracked:
+# secrets, private data, the internal governance notes, or the git-ignored
+# director/implementor directives. A public leak is irreversible, so this gate
+# is as strict here as in any higher-class Compass repo.
+on:
+  push: { branches: [main] }
+  pull_request: { branches: [main] }
+permissions: { contents: read }
+concurrency:
+  group: restricted-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail if secrets, private data, or internal governance are tracked
+        run: |
+          if git ls-files | grep -EI '(^|/)(private/|secrets\.|\.env|.*\.key$|.*\.pem$)'; then
+            echo "Secret/private files must not be tracked."; exit 1
+          fi
+          if git ls-files | grep -Ex '(GOVERNANCE\.md|_directives/.*)'; then
+            echo "Internal governance / directives must not be tracked."; exit 1
+          fi
+          echo "No secrets, private data, or internal governance tracked."

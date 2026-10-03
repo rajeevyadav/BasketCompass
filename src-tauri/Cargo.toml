@@ -1,0 +1,23 @@
+[package]
+name = "basketcompass"
+version = "0.1.0"
+description = "BasketCompass desktop wrapper"
+edition = "2021"
+rust-version = "1.77"
+
+# Thin native shell around the static dist/ web app. No Rust-side commands are
+# exposed yet; the window simply hosts the same Progressive Web App.
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+
+[profile.release]
+# Smaller, faster installer binaries.
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

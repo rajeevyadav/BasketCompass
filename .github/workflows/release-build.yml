@@ -1,0 +1,53 @@
+name: release-build
+# Heavy build (the Tauri native installer) runs ONLY for a release: a version tag
+# or a manual dispatch. It never runs on ordinary commits or PRs, so no
+# unnecessary build is produced. The quality checks still guard every change via
+# pages.yml. The engine/adapter tests gate the build before any installer is made.
+on:
+  push: { tags: ['v*'] }
+  workflow_dispatch:
+permissions: { contents: write }
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm test
+      - run: python3 scripts/CheckCommits.py
+        env:
+          OWNER_EMAIL: ${{ vars.OWNER_EMAIL }}
+
+  build:
+    needs: gate
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Linux bundling dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+      - run: npm install
+        working-directory: src-tauri
+      - name: Build desktop installer
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: src-tauri
+          tagName: ${{ github.ref_name }}
+          releaseName: BasketCompass ${{ github.ref_name }}
+          releaseDraft: true

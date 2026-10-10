@@ -11,9 +11,15 @@ venv/
 
 # ── Node / web ─────────────────────────────────────────────────────────────
 # dist/ is NOT ignored: it holds the hand-written app shell that GitHub Pages
-# publishes. There is no build step that regenerates it.
+# publishes. There is no build step that regenerates it. build/ holds the tracked
+# installer scripts (spec/iss/ps1), so it is not ignored either.
 node_modules/
-build/
+
+# ── Installer build artifacts (generated, never committed) ─────────────────
+.build-venv/
+/build-work/
+/dist-app/
+/dist-installer/
 
 # ── Secrets / private data (PUBLIC repo — keep these out, always) ──────────
 /private/

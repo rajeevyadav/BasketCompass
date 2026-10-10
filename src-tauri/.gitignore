@@ -1,4 +1,0 @@
-# Rust/Tauri build output and generated files — never committed.
-/target/
-/gen/
-node_modules/

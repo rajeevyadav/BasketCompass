@@ -149,7 +149,10 @@ def main() -> None:
     write_banner(BRAND_DIR / "Banner.svg")
     draw_icon(192).save(DIST_DIR / "Icon-192.png")
     draw_icon(512).save(DIST_DIR / "Icon-512.png")
-    print("Brand assets written to brand/ and dist/.")
+    # Multi-size Windows .ico for the frozen launcher exe and the Inno installer.
+    draw_icon(256).save(BRAND_DIR / "Icon.ico",
+                        sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
+    print("Brand assets written to brand/, dist/, and brand/Icon.ico.")
 
 
 if __name__ == "__main__":

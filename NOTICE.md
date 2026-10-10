@@ -18,10 +18,16 @@ for attribution.
 
 ## Build and release tooling (not bundled into the web app)
 
-- **Tauri** — used only to produce the optional native desktop installer in
-  `src-tauri/`. Tauri is dual-licensed under MIT or Apache-2.0. It is a build
-  dependency; none of its source is vendored into this repository.
+- **PyInstaller** — freezes the small Python launcher (`installer/Launcher.py`)
+  into the desktop app. PyInstaller is GPL-2.0 with a bootloader exception that
+  permits distributing frozen applications under any licence; only its runtime
+  bootloader ships inside the built `.exe`, not its source. The frozen launcher
+  serves the static `dist/` files on `127.0.0.1`.
+- **Inno Setup** — wraps the frozen app into the downloadable Windows
+  `Setup.exe`. Inno Setup is free software under its own permissive licence and is
+  a build-time tool only.
 - **Node.js test runner** (`node --test`) and **Pillow** (brand asset generation)
   are developer tools invoked locally and in CI, not shipped to users.
 
-No code from any of the above is copied into this repository.
+BasketCompass itself is released under the MIT License (see `LICENSE`). No
+third-party source is copied into this repository.

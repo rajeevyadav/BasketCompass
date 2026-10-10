@@ -15,7 +15,7 @@
 
 <p align="center">
   <code>Web PWA</code> &nbsp;·&nbsp; <code>Dependency-free</code> &nbsp;·&nbsp; <code>Offline-capable</code> &nbsp;·&nbsp;
-  <code>Tauri desktop</code> &nbsp;·&nbsp; <code>IEC 62304 Class A</code> &nbsp;·&nbsp; <code>Public · test release 0.1.0</code>
+  <code>Windows installer</code> &nbsp;·&nbsp; <code>IEC 62304 Class A</code> &nbsp;·&nbsp; <code>MIT</code> &nbsp;·&nbsp; <code>Public · test release 0.1.0</code>
 </p>
 
 ---
@@ -58,10 +58,12 @@ Run the checks with `npm test`.
   browser's install prompt or the in-app Install button to add it to a phone home
   screen or desktop. The service worker caches only the local app shell for
   offline use and never caches third-party prices.
-- **As a desktop app:** a native installer is built with [Tauri](https://tauri.app)
-  — a small Windows `.msi`/`.exe` (and macOS/Linux bundles) that wraps the same
-  `dist/` shell. It is produced by the `release-build` workflow on a version tag;
-  see [Build & release](#build--release).
+- **As a desktop app (Windows):** download `BasketCompass-Setup-<version>-Windows-x64.exe`
+  from the latest [release](../../releases) and run it. It installs per-user (no
+  admin needed); launching opens a small window that serves the app on
+  `127.0.0.1` and opens your browser. Lists stay on your device; nothing is
+  uploaded. The installer is built with PyInstaller + Inno Setup; see
+  [Build & release](#build--release).
 
 ## Test the complete flow
 
@@ -96,10 +98,11 @@ dist/
   ServiceWorker.js      local app-shell cache only; rejects redirected/auth pages, never caches external prices
   Style.css             styles
   Icon.svg, Icon-*.png  app icons (generated from brand/)
-brand/                  computed brand assets + GenerateBrand.py
+brand/                  computed brand assets + GenerateBrand.py (incl. Icon.ico)
 tests/                  node --test suites for Engine and Provider
 scripts/CheckCommits.py commit-metadata policy check (used by CI)
-src-tauri/              Tauri desktop wrapper (native installer)
+installer/Launcher.py   serves dist/ on 127.0.0.1 and opens the browser (frozen into the desktop app)
+build/                  BasketCompass.spec (PyInstaller), BasketCompass.iss (Inno Setup), Build-Windows.ps1
 docs/                   user manual and release status
 ```
 
@@ -114,7 +117,7 @@ CI mirrors the Compass-family split, scaled to this public Class A project:
 - `pages.yml` — on push to `main`, runs `npm test` and the commit-metadata check, then publishes `dist/` to GitHub Pages (enabled in repository settings once the baseline is verified).
 - `authorship-guard.yml` — rejects any AI attribution or bot-authored commit.
 - `restricted-content-guard.yml` — fails if secrets, private data, or the internal governance notes are ever tracked.
-- `release-build.yml` — on a version tag, gates on the tests then builds the Tauri desktop installer and uploads it as a release artifact.
+- `release-build.yml` — on a version tag, gates on the tests then builds the Windows installer (PyInstaller + Inno Setup) and attaches it to a draft release.
 
 The local `.githooks/commit-msg` hook is the first gate (set it with
 `git config core.hooksPath .githooks` and export `OWNER_EMAIL`); remote CI is the
@@ -123,13 +126,16 @@ second gate and cannot be bypassed.
 ## Build & release
 
 ```sh
-npm test                                   # deterministic engine + adapter fixtures
-npm --prefix src-tauri run tauri build     # native desktop installer (needs the Rust toolchain)
-python3 brand/GenerateBrand.py             # regenerate brand assets and app icons
+npm test                          # deterministic engine + adapter fixtures
+python brand/GenerateBrand.py     # regenerate brand assets and app icons (incl. Icon.ico)
+pwsh build/Build-Windows.ps1      # full Windows installer: tests -> PyInstaller -> Inno Setup
 ```
 
-Tagging `v*` runs `release-build`, which rebuilds the installer in CI and attaches
-it to the tagged release.
+`Build-Windows.ps1` needs Node.js, Python 3.11-3.13, and Inno Setup 6 (`ISCC.exe`)
+on the build machine; it writes
+`dist-installer/BasketCompass-Setup-0.1.0-Windows-x64.exe`. Tagging `v*` runs
+`release-build`, which rebuilds the installer in CI and attaches it to the tagged
+release.
 
 ## Governance & licence
 
@@ -139,8 +145,7 @@ no AI attribution appears in any commit, PR, or tag. The repository is public, s
 nothing confidential is ever committed. See `NOTICE.md` for third-party
 attributions.
 
-A `LICENSE` file is not yet chosen — add one before accepting outside
-contributions or redistribution.
+Licensed under the [MIT License](LICENSE).
 
 © 2026 Rajeev Yadav.
 

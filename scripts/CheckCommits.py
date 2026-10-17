@@ -41,7 +41,12 @@ parts = raw.split('\0')
 for i in range(0, len(parts) - 4, 5):
     sha, author, committer, parents, message = parts[i:i + 5]
     is_merge = len(parents.split()) > 1
-    if not is_merge and author.strip() != owner:
+    # Commits GitHub itself lands (a squash/merge through the web UI) are committed
+    # as "GitHub <noreply@github.com>" and re-authored to the actor's no-reply
+    # address. They are the platform's mechanical result, not a hand-authored
+    # commit, so they are exempt from the owner-author rule the same way merges are.
+    web_flow = committer.strip() == 'noreply@github.com'
+    if not is_merge and not web_flow and author.strip() != owner:
         sys.exit('Unauthorized author identity: ' + sha.strip())
     if BOT_IDENTITY.search(author) or BOT_IDENTITY.search(committer):
         sys.exit('Bot commit identity: ' + sha.strip())

@@ -18,7 +18,7 @@ if not owner:
 
 # Attribution patterns (case-insensitive, multiline). Each targets a credit line
 # or trailer, not prose: a co-author trailer, a "generated/authored by <tool>"
-# credit, or the robot emoji. A non-owner identity is checked separately below.
+# credit, or the robot emoji.
 ATTRIBUTION = re.compile(
     r'^\s*co-authored-by:\s'
     r'|generated\s+(?:with|by)\b[^\n]*\b(?:ai|claude|copilot|chatgpt|gemini|codex|anthropic|openai|bard)\b'
@@ -27,13 +27,24 @@ ATTRIBUTION = re.compile(
     re.IGNORECASE | re.MULTILINE,
 )
 
+# Bot committer identities that are never acceptable. A merge/squash landed through
+# a protected branch is committed by the platform (GitHub <noreply@github.com>),
+# which is allowed; dependabot/renovate/copilot/*[bot]* are not.
+BOT_IDENTITY = re.compile(r'\[bot\]|dependabot|renovate\b|copilot', re.IGNORECASE)
+
+# Real authored changes must be the owner's work. Merge commits (2+ parents) are
+# mechanical — on a protected branch they are created and signed by the platform,
+# not authored by a person — so their author identity is not held to the owner.
 raw = subprocess.check_output(
-    ['git', 'log', '--all', '--format=%H%x00%ae%x00%ce%x00%B%x00']).decode()
+    ['git', 'log', '--all', '--format=%H%x00%ae%x00%ce%x00%P%x00%B%x00']).decode()
 parts = raw.split('\0')
-for i in range(0, len(parts) - 3, 4):
-    sha, author, committer, message = parts[i:i + 4]
-    if author != owner or committer != owner:
-        sys.exit('Unauthorized commit identity: ' + sha.strip())
+for i in range(0, len(parts) - 4, 5):
+    sha, author, committer, parents, message = parts[i:i + 5]
+    is_merge = len(parents.split()) > 1
+    if not is_merge and author.strip() != owner:
+        sys.exit('Unauthorized author identity: ' + sha.strip())
+    if BOT_IDENTITY.search(author) or BOT_IDENTITY.search(committer):
+        sys.exit('Bot commit identity: ' + sha.strip())
     if ATTRIBUTION.search(message):
         sys.exit('Prohibited commit attribution: ' + sha.strip())
 print('Commit metadata policy passed.')
